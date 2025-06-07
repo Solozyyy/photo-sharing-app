@@ -74,3 +74,9 @@ export async function deleteCommentByIdService(photoId, commentId) {
 
     return data;
 }
+
+export async function editUserByUserId(userId, formData) {
+    const { data } = await axiosInstance.put(`/api/user/edit/${userId}`, formData);
+
+    return data;
+}
