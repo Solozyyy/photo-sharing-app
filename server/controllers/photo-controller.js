@@ -201,11 +201,31 @@ const deleteCommentById = async (req, res) => {
     }
 }
 
+const editCommentByCommentId = async (req, res) => {
+
+    const { photoId } = req.params;
+    const { commentId, comment } = req.body;
+
+    const photo = await Photo.findById(photoId);
+
+    const targetComment = photo.comments.id(commentId);
+
+    targetComment.comment = comment;
+
+    await photo.save();
+    res.status(200).json({
+        success: true,
+        message: "updated successfully",
+    });
+
+}
+
 module.exports = {
     uploadPhoto,
     getPhotosByUserId,
     deletePhotoById,
     addCommentToPhoto,
     getCommentsByPhotoId,
-    deleteCommentById
+    deleteCommentById,
+    editCommentByCommentId,
 };

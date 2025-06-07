@@ -3,7 +3,7 @@ import { Box, Button, Paper, TextField, Typography } from "@mui/material";
 import { jwtDecode } from "jwt-decode";
 import "./styles.css";
 import { useNavigate, useParams } from "react-router-dom";
-import { addNewCommentService, deleteCommentByIdService, deletePhotoById, getCommentsByPhotoId, getPhotosByUserIdService, getUserByIdService } from "../../services";
+import { addNewCommentService, deleteCommentByIdService, deletePhotoById, editCommmentByCommentId, getCommentsByPhotoId, getPhotosByUserIdService, getUserByIdService } from "../../services";
 
 /**
  * Define UserPhotos, a React component of Project 4.
@@ -21,6 +21,8 @@ function UserPhotos() {
   const [userMap, setUserMap] = useState({});
   const navigate = useNavigate();
   const [deleteComment, setDeleteComment] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [editComment, setEditComment] = useState("");
 
   async function getPhotosAndComments() {
     const res = await getPhotosByUserIdService(userId);
@@ -113,6 +115,23 @@ function UserPhotos() {
     if (res) setDeleteComment(true);
   }
 
+  function handleShowEditForm(cmt) {
+    setEditComment(cmt);
+    setShowForm(true);
+  }
+
+  const handleEditCommentChange = (e) => {
+    setEditComment(e.target.value);
+  }
+
+  async function handleSubmitEditComment(photoId, cmtId) {
+    console.log(editComment, "editComment");
+    const res = await editCommmentByCommentId(photoId, cmtId, editComment);
+    if (res) alert("edit successfully");
+    setShowForm(false);
+    setEditComment("");
+  }
+
   //console.log(comment, "Comment");
 
   useEffect(() => {
@@ -123,7 +142,7 @@ function UserPhotos() {
     getPhotosAndComments();
     setDeletePhoto(false);
     setDeleteComment(false);
-  }, [userId, deletePhoto, deleteComment]);
+  }, [userId, deletePhoto, deleteComment, editComment]);
 
   return (
     <Box>
@@ -233,9 +252,28 @@ function UserPhotos() {
                     </Typography>
                     <p>
                       {payload._id === cmt.user_id &&
-                        (< Button variant="outlined" color="error" onClick={() => handleDeleteComment(item._id, cmt._id)}>
-                          Delete Comment
-                        </Button>)
+                        <>
+                          <div>
+                            < Button variant="outlined" color="error" onClick={() => handleDeleteComment(item._id, cmt._id)}>
+                              Delete Comment
+                            </Button>
+                          </div>
+                          <div>
+                            <Button variant="outlined" onClick={() => handleShowEditForm(cmt.comment)}>Edit Comment</Button>
+                          </div>
+                          {showForm &&
+                            <>
+                              <TextField
+                                label={cmt.comment}
+                                value={editComment}
+                                onChange={handleEditCommentChange}
+                              ></TextField>
+                              <div>
+                                <Button variant="outlined" onClick={() => handleSubmitEditComment(item._id, cmt._id)}>Submit</Button>
+                              </div>
+                            </>
+                          }
+                        </>
                       }
                     </p>
                   </Box>

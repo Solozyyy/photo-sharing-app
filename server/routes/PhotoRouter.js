@@ -7,7 +7,8 @@ const {
     deletePhotoById,
     addCommentToPhoto,
     getCommentsByPhotoId,
-    deleteCommentById
+    deleteCommentById,
+    editCommentByCommentId
 } = require("../controllers/photo-controller");
 
 const upload = require("../middleware/upload");
@@ -24,5 +25,7 @@ router.delete("/delete", deletePhotoById);
 router.post("/add-comment", addCommentToPhoto);
 
 router.delete("/delete-comment", deleteCommentById);
+
+router.put("/edit-comment/:photoId", editCommentByCommentId);
 
 module.exports = router;

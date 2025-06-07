@@ -80,3 +80,12 @@ export async function editUserByUserId(userId, formData) {
 
     return data;
 }
+
+export async function editCommmentByCommentId(photoId, commentId, formData) {
+    const { data } = await axiosInstance.put(`/api/photos/edit-comment/${photoId}`, {
+        commentId,
+        comment: formData
+    });
+
+    return data;
+}
