@@ -167,4 +167,45 @@ const getCommentsByPhotoId = async (req, res) => {
     }
 }
 
-module.exports = { uploadPhoto, getPhotosByUserId, deletePhotoById, addCommentToPhoto, getCommentsByPhotoId };
+const deleteCommentById = async (req, res) => {
+    try {
+        const { photoId, commentId } = req.body;
+
+        const photo = await Photo.findById(photoId);
+
+        if (!photo) {
+            return res.status(401).json({
+                success: false,
+                message: "Photo not found",
+            });
+        }
+
+        photo.comments = photo.comments.filter(
+            (cmt) => cmt._id.toString() !== commentId
+        );
+
+        await photo.save();
+
+        res.status(200).json({
+            success: true,
+            message: "deleted comment successfully"
+        });
+
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            success: false,
+            message: "Server error",
+        });
+    }
+}
+
+module.exports = {
+    uploadPhoto,
+    getPhotosByUserId,
+    deletePhotoById,
+    addCommentToPhoto,
+    getCommentsByPhotoId,
+    deleteCommentById
+};

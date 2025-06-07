@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Box, Button, Paper, TextField, Typography } from "@mui/material";
 import { jwtDecode } from "jwt-decode";
 import "./styles.css";
-import { useParams } from "react-router-dom";
-import { addNewCommentService, deletePhotoById, getCommentsByPhotoId, getPhotosByUserIdService, getUserByIdService } from "../../services";
+import { useNavigate, useParams } from "react-router-dom";
+import { addNewCommentService, deleteCommentByIdService, deletePhotoById, getCommentsByPhotoId, getPhotosByUserIdService, getUserByIdService } from "../../services";
 
 /**
  * Define UserPhotos, a React component of Project 4.
@@ -19,6 +19,8 @@ function UserPhotos() {
   const [comment, setComment] = useState("");
   const [commentMap, setCommentMap] = useState({});
   const [userMap, setUserMap] = useState({});
+  const navigate = useNavigate();
+  const [deleteComment, setDeleteComment] = useState(false);
 
   async function getPhotosAndComments() {
     const res = await getPhotosByUserIdService(userId);
@@ -71,29 +73,44 @@ function UserPhotos() {
       // Load lại comment sau khi post
       const commentRes = await getCommentsByPhotoId(photoId);
       const newComments = commentRes.data;
-      setCommentMap((prev) => ({
-        ...prev,
-        [photoId]: newComments,
-      }));
+
+      // Tạo một bản sao userMap hiện tại
+      const updatedUserMap = { ...userMap };
+
+      // ⚠️ Load user cho mỗi comment nếu chưa có
       for (const cmt of newComments) {
         const uid = cmt.user_id;
-        if (uid && !userMap[uid]) {
+        if (uid && !updatedUserMap[uid]) {
           try {
             const userRes = await getUserByIdService(uid);
-            setUserMap((prev) => ({
-              ...prev,
-              [uid]: userRes.data,
-            }));
+            updatedUserMap[uid] = userRes.data;
           } catch (err) {
             console.error("❌ Failed to load user for comment:", uid, err);
           }
         }
       }
+
+      // ✅ Cập nhật userMap trước
+      setUserMap(updatedUserMap);
+      setCommentMap((prev) => ({
+        ...prev,
+        [photoId]: newComments,
+      }));
+
     }
   }
 
   function handleCommentChange(e) {
     setComment(e.target.value);
+  }
+
+  function handleForwardUser(userId) {
+    navigate(`/users/${userId}`);
+  }
+
+  async function handleDeleteComment(photoId, commentId) {
+    const res = await deleteCommentByIdService(photoId, commentId);
+    if (res) setDeleteComment(true);
   }
 
   //console.log(comment, "Comment");
@@ -105,7 +122,8 @@ function UserPhotos() {
   useEffect(() => {
     getPhotosAndComments();
     setDeletePhoto(false);
-  }, [userId, deletePhoto]);
+    setDeleteComment(false);
+  }, [userId, deletePhoto, deleteComment]);
 
   return (
     <Box>
@@ -181,12 +199,47 @@ function UserPhotos() {
                 // console.log("Render comment for photo", item._id, cmt);
                 const user = userMap[cmt.user_id];
                 return (
-                  <Box key={idx} sx={{ marginLeft: 2 }}>
-                    <Typography variant="subtitle2" sx={{ fontWeight: "bold" }}>
-                      {user ? `${user.first_name} ${user.last_name}` : cmt.user_id}
+                  <Box
+                    key={idx}
+                    sx={{
+                      margin: "10px 0",
+                      padding: "10px",
+                      border: "1px solid #ccc",
+                      borderRadius: "8px",
+                      backgroundColor: "#f9f9f9"
+                    }}>
+                    {/* <Typography variant="subtitle2" sx={{ fontWeight: "bold" }}>
+                    {user ? `${user.first_name} ${user.last_name}` : cmt.user_id}
+                    
+                    </Typography> */}
+                    <p>Uploaded at{" "}
+                      {new Date(cmt.date_time).toLocaleString("vi-VN", {
+                        timeZone: "Asia/Ho_Chi_Minh",
+                        hour12: false,
+                        year: "numeric",
+                        month: "2-digit",
+                        day: "2-digit",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit",
+                      })} by
+                      <Button
+                        onClick={() => handleForwardUser(user._id)}
+                      >{user.first_name} {user.last_name}</Button>
+                    </p>
+
+                    <Typography variant="body1" sx={{ marginBottom: "5px", whiteSpace: "pre-wrap" }}>
+                      {cmt.comment}
                     </Typography>
-                    <Typography>{cmt.comment}</Typography>
+                    <p>
+                      {payload._id === cmt.user_id &&
+                        (< Button variant="outlined" color="error" onClick={() => handleDeleteComment(item._id, cmt._id)}>
+                          Delete Comment
+                        </Button>)
+                      }
+                    </p>
                   </Box>
+
                 );
               })}
             </Box>

@@ -17,7 +17,7 @@ function TopBar() {
   const token = JSON.parse(sessionStorage.getItem("accessToken")) || "";
   const payload = jwtDecode(token);
 
-  const handleLogOut = () => {
+  function handleLogOut() {
     sessionStorage.removeItem("accessToken");
     navigate("/auth");
   }

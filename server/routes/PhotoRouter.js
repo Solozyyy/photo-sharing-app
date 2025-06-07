@@ -1,6 +1,15 @@
 const express = require("express");
 const Photo = require("../models/Photos");
-const { uploadPhoto, getPhotosByUserId, deletePhotoById, addCommentToPhoto, getCommentsByPhotoId } = require("../controllers/photo-controller");
+
+const {
+    uploadPhoto,
+    getPhotosByUserId,
+    deletePhotoById,
+    addCommentToPhoto,
+    getCommentsByPhotoId,
+    deleteCommentById
+} = require("../controllers/photo-controller");
+
 const upload = require("../middleware/upload");
 const router = express.Router();
 
@@ -14,5 +23,6 @@ router.delete("/delete", deletePhotoById);
 
 router.post("/add-comment", addCommentToPhoto);
 
+router.delete("/delete-comment", deleteCommentById);
 
 module.exports = router;

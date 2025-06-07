@@ -66,3 +66,11 @@ export async function getCommentsByPhotoId(photoId) {
     console.log("📥 Response from backend:", data);
     return data;
 }
+
+export async function deleteCommentByIdService(photoId, commentId) {
+    console.log("delete comment", commentId);
+
+    const { data } = await axiosInstance.delete("/api/photos/delete-comment", { data: { photoId, commentId } });
+
+    return data;
+}
